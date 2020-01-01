@@ -5,6 +5,7 @@ requirejs.config({
         Phaser: '../lib/phaser.min',
         core: 'core',
         graph: 'graph',
+        scenes: 'scenes',
     },
     shim: {
         'main': ['core/base', 'jquery', 'Phaser'],
