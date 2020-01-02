@@ -6,9 +6,9 @@ define(function(require) {
 
     function create() {
         let logo = this.add.image(320, 240, 'logo');
-        let go_nxt = function() {
+        let go_nxt = e => {
             console.log('goto st01');
-            this.start('st01');
+            this.scene.start('st01');
         };
         this.input.keyboard.on('keydown', go_nxt);
         this.input.on('pointerdown', go_nxt);
