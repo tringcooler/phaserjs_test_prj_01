@@ -17,9 +17,12 @@ define(function(require) {
     function create() {
         let bg_map = this.make.tilemap({key: 'bg'});
         let bg_tiles = bg_map.addTilesetImage('mp01', 'bg_tiles');
-        let bg_layer = bg_map.createStaticLayer('background', 'mp01',
+        let center = [
             this.cameras.main.centerX - bg_map.widthInPixels / 2,
-            this.cameras.main.centerY - bg_map.heightInPixels / 2);
+            this.cameras.main.centerY - bg_map.heightInPixels / 2];
+        let bg_layer = bg_map.createStaticLayer('background', 'mp01', ...center);
+        let walls_layer = bg_map.createStaticLayer('walls', 'mp01', ...center);
+        walls_layer.setCollisionByExclusion([-1]);
     }
     
     function update() {
