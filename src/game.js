@@ -5,8 +5,8 @@ define(function(require) {
         width: 640,
         height: 480,
         physics: {
-            default: 'arcade',
-            arcade: {
+            default: 'matter',
+            matter: {
                 //gravity: { y: 0 },
                 debug: true
             }
