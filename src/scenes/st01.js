@@ -20,12 +20,17 @@ define(function(require) {
         let polygons = [];
         for(let obj of objs) {
             console.log(offset_x, obj.x, offset_y, obj.y);
-            let pos = [obj.x + offset_x, obj.y + offset_y];
-            let polygon = scene.add.polygon(...pos, obj.polygon, 128);
-            polygon.setRotation(obj.rotation);
-            scene.matter.add.gameObject(polygon, {isStatic: true, shape: {type: 'fromVertices', verts: obj.polygon}});
-            console.log(polygon);
-            polygons.push(polygon);
+            let p_ref = new Phaser.Geom.Polygon(obj.polygon);
+            console.log('p_ref', p_ref);
+            let p_aabb = Phaser.Geom.Polygon.GetAABB(p_ref);
+            let pos = [obj.x + offset_x + p_aabb.width / 2, obj.y + offset_y + p_aabb.height / 2];
+            //let polygon = scene.matter.add.fromVertices(...pos, obj.polygon, {isStatic: true});
+            let polygon_g = scene.add.polygon(...pos, obj.polygon, 128);
+            polygon_g.setRotation(obj.rotation);
+            scene.matter.add.gameObject(polygon_g, {isStatic: true, shape: {type: 'fromVertices', verts: polygon_g.geom.points/*obj.polygon*/}});
+            //console.log(pos, obj.polygon, polygon.vertices);
+            console.log(polygon_g);
+            //polygons.push(polygon);
         }
         return polygons;
     }
