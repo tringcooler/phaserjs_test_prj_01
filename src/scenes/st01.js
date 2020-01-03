@@ -19,21 +19,10 @@ define(function(require) {
         let objs = obj_layer.objects;
         let polygons = [];
         for(let obj of objs) {
-            console.log(offset_x, obj.x, offset_y, obj.y);
-            /*let p_ref = new Phaser.Geom.Polygon(obj.polygon);
-            console.log('p_ref', p_ref);
-            let p_aabb = Phaser.Geom.Polygon.GetAABB(p_ref);*/
-            //let c_points = obj.polygon.map(p=>({x: p.x + pos[0], y: p.y + pos[1]}));
             let center = Phaser.Physics.Matter.Matter.Vertices.centre(obj.polygon);
-            console.log(center);
             let pos = [obj.x + offset_x + center.x, obj.y + offset_y + center.y];
             let polygon = scene.matter.add.fromVertices(...pos, obj.polygon, {isStatic: true});
-            /*let polygon_g = scene.add.polygon(...pos, obj.polygon, 128);
-            polygon_g.setRotation(obj.rotation);
-            scene.matter.add.gameObject(polygon_g, {isStatic: true, shape: {type: 'fromVertices', verts: obj.polygon}});*/
-            console.log(pos, obj.polygon, polygon.vertices);
-            console.log(polygon);
-            //polygons.push(polygon);
+            polygons.push(polygon);
         }
         return polygons;
     }
@@ -47,15 +36,7 @@ define(function(require) {
         let bg_layer = bg_map.createStaticLayer('background', 'mp01', ...center);
         let walls_layer = bg_map.createStaticLayer('walls', 'mp01', ...center);
         walls_layer.setCollisionByExclusion([-1]);
-        //let coll_layer = bg_map.getObjectLayer('coll');
-        //this.matter.world.convertTilemapLayer(coll_layer);
-        //let coll_objs = bg_map.createFromObjects('coll', 'colls');
         let coll_objs = _create_polygon_from_tiled_object_layer(bg_map, 'coll', this, ...center);
-        /*coll_objs.forEach(co => {
-            this.matter.add.gameObject(co, {isStatic: true});
-        });*/
-        console.log(bg_map);
-        console.log(coll_objs);
     }
     
     function update() {
