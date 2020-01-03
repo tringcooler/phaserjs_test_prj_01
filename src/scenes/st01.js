@@ -23,6 +23,13 @@ define(function(require) {
         let bg_layer = bg_map.createStaticLayer('background', 'mp01', ...center);
         let walls_layer = bg_map.createStaticLayer('walls', 'mp01', ...center);
         walls_layer.setCollisionByExclusion([-1]);
+        //let coll_objs = bg_map.getObjectLayer('coll').objects;
+        let coll_objs = bg_map.createFromObjects('coll', 'colls');
+        coll_objs.forEach(co => {
+            this.physics.add.existing(co);
+        });
+        console.log(bg_map);
+        console.log(coll_objs);
     }
     
     function update() {
