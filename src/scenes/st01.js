@@ -21,10 +21,9 @@ define(function(require) {
         for(let obj of objs) {
             console.log(offset_x, obj.x, offset_y, obj.y);
             let pos = [obj.x + offset_x, obj.y + offset_y];
-            console.log(pos);
             let polygon = scene.add.polygon(...pos, obj.polygon, 128);
             polygon.setRotation(obj.rotation);
-            scene.matter.add.gameObject(polygon, {isStatic: true, shape: 'polygon'});
+            scene.matter.add.gameObject(polygon, {isStatic: true, shape: {type: 'fromVertices', verts: obj.polygon}});
             console.log(polygon);
             polygons.push(polygon);
         }
