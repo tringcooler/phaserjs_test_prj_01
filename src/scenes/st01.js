@@ -1,7 +1,7 @@
 define(function(require) {
     
     const 
-        ASSETS = n => '../assets/' + n;
+        ASSETS = n => 'assets/' + n;
         IMGS = (n, ex) => ASSETS('img/' + n + (ex ? ex : '.png'));
     
     let opv = op => (a, b) => [op(a[0], b[0]), op(a[1], b[1])],
