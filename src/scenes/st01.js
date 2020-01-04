@@ -11,6 +11,7 @@ define(function(require) {
         nf3 = nf(3);
     
     let ball_pool = [];
+    let bar_pool = [];
 
     function preload() {
         this.load.spritesheet('player1', 
@@ -78,14 +79,9 @@ define(function(require) {
         }
         
         _init_status() {
-            this.speed = {
-                x: 0,
-                y: 0
-            };
         }
         
         _init_gameobject() {
-            this.go.anims.play(this.name + '_down');
         }
         
         _update_debug() {
@@ -130,19 +126,23 @@ define(function(require) {
     
     class c_bar {
         
-        constructor(scene, pos, dir, ang, size = [95, 10], color = 128) {
+        constructor(scene, pos, dir, ang, dur = 300, size = [95, 10], color = 128) {
             this.scene = scene;
             this.pos = pos;
             this.dir = Math.sign(dir);
             this.ang = ang;
+            this.dur = dur;
             this.size = size;
             this.color = color;
             this._create_gameobject();
+            this._init_status();
         }
         
         _rotate(ang) {
+            ang = Math.min(Math.max(ang, -this.ang), this.ang);
             Phaser.Physics.Matter.Matter.Body.rotate(this.go.body, this.dir * ang,
                 {x: this.pos[0], y: this.pos[1]});
+            return ang;
         }
         
         _create_gameobject() {
@@ -157,6 +157,25 @@ define(function(require) {
                but, the real pair restitution between 2 objects is the Max of them,
                so, this is not worked when set to 0. */
             //this.go.setBounce(0);
+        }
+        
+        _init_status() {
+            this.status = {
+                ang: this.ang,
+                act: 0,
+            }
+        }
+        
+        _delt_angle(delt) {
+            return this.ang * 2 / this.dur * delt;
+        }
+        
+        _update_angle(delt) {
+            this.status.ang = this._rotate(this.status.ang + this.status.act * this._delt_angle(delt));
+        }
+        
+        update(delt) {
+            this._update_angle(delt);
         }
         
     }
@@ -179,6 +198,8 @@ define(function(require) {
         this.matter.add.mouseSpring();
         let bar1 = new c_bar(this, addv(center, [70, 403]), 1, 0.5);
         let bar2 = new c_bar(this, addv(center, [289, 403]), -1, 0.5);
+        bar_pool.push(bar1);
+        bar_pool.push(bar2);
         let player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
@@ -186,6 +207,9 @@ define(function(require) {
     function update(time, delta) {
         for(let ball of ball_pool) {
             ball.update();
+        }
+        for(let bar of bar_pool) {
+            bar.update(delta);
         }
     }
     
