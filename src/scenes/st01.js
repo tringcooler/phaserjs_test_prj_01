@@ -130,8 +130,28 @@ define(function(require) {
     
     class c_bar {
         
-        constructor(scene) {
+        constructor(scene, pos, dir, ang, size = [100, 10], color = 128) {
             this.scene = scene;
+            this.pos = pos;
+            this.dir = Math.sign(dir);
+            this.ang = ang;
+            this.size = size;
+            this.color = color;
+            this._create_gameobject();
+        }
+        
+        _rotate(ang) {
+            Phaser.Physics.Matter.Matter.Body.rotate(this.go.body, this.dir * ang,
+                {x: this.pos[0], y: this.pos[1]});
+        }
+        
+        _create_gameobject() {
+            this.mass = addv(this.pos, [this.dir * this.size[0] / 2, 0]);
+            this.go = this.scene.add.rectangle(...this.mass, ...this.size, this.color);
+            this.scene.matter.add.gameObject(this.go, {
+                isStatic: true,
+            });
+            this._rotate(this.ang);
         }
         
     }
@@ -160,8 +180,9 @@ define(function(require) {
         let coll_objs = _create_polygon_from_tiled_object_layer(bg_map, 'coll', this, ...center);
         this.matter.world.setBounds(...center, bg_map.widthInPixels, bg_map.heightInPixels);
         this.matter.add.mouseSpring();
-        _create_bar(this);
-        player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
+        let bar1 = new c_bar(this, addv(center, [70, 403]), 1, 0.5);
+        let bar2 = new c_bar(this, addv(center, [289, 403]), -1, 0.5);
+        let player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
     
