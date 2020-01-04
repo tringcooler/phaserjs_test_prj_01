@@ -52,6 +52,7 @@ define(function(require) {
                     radius: 20,
                 },
             });
+            this.go.body._collflag_ball = true;
             this._init_anims();
         }
         
@@ -118,7 +119,7 @@ define(function(require) {
     
     class c_bar {
         
-        constructor(scene, pos, dir, ang, dur = 150, size = [95, 10], color = 128) {
+        constructor(scene, pos, dir, ang, dur = 100, size = [95, 10], color = 128) {
             this.scene = scene;
             this.pos = pos;
             this.dir = Math.sign(dir);
@@ -126,9 +127,10 @@ define(function(require) {
             this.dur = dur;
             this.size = size;
             this.color = color;
-            this._create_gameobject();
             this._init_status();
+            this._create_gameobject();
             this._init_controll();
+            this._init_flip_event();
         }
         
         _cur_ang() {
@@ -142,7 +144,7 @@ define(function(require) {
             ang = r_ang - c_ang;
             Phaser.Physics.Matter.Matter.Body.rotate(this.go.body, this.dir * ang,
                 {x: this.pos[0], y: this.pos[1]});
-            return ang;
+            this.status.sta = - Math.sign(ang);
         }
         
         _create_gameobject() {
@@ -162,6 +164,7 @@ define(function(require) {
         _init_status() {
             this.status = {
                 act: -1,
+                sta: 0,
             }
         }
         
@@ -174,6 +177,32 @@ define(function(require) {
             });
         }
         
+        _init_flip_event() {
+            this.scene.matter.world.on('collisionactive', (event, body_a, body_b) => {
+                let src, dst;
+                if(body_a === this.go.body) {
+                    src = body_a;
+                    dst = body_b;
+                } else if(body_b === this.go.body) {
+                    src = body_b;
+                    dst = body_a;
+                } else {
+                    return;
+                }
+                if(dst._collflag_ball && this.status.sta > 0) {
+                    console.log('.');
+                    dst.gameObject.thrust(2000);
+                }
+            });
+        }
+        
+        _update_debug() {
+            if(!this.debug_txt) this.debug_txt = this.scene.add.text(20, 120, '');
+            this.debug_txt.setText(
+                'act:' + this.status.act +
+                '\nsta:' + this.status.sta);
+        }
+        
         _delt_angle(delt) {
             return this.ang * 2 / this.dur * delt;
         }
@@ -184,6 +213,7 @@ define(function(require) {
         
         update(delt) {
             this._update_angle(delt);
+            this._update_debug();
         }
         
     }
@@ -208,7 +238,7 @@ define(function(require) {
         let bar2 = new c_bar(this, addv(center, [289, 403]), -1, 0.5);
         bar_pool.push(bar1);
         bar_pool.push(bar2);
-        let player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
+        player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
     
