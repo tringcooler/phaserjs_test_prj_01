@@ -41,8 +41,9 @@ define(function(require) {
             this.scene = scene;
             this.name = name;
             this.go = this.scene.matter.add.sprite(...pos, this.name, null, {
-                ignoreGravity: false,//true,
+                ignoreGravity: false,
                 inertia: Infinity,
+                friction: 0.00001,
                 frictionAir: 0.01,
                 restitution: .5,
                 shape: {
@@ -126,6 +127,22 @@ define(function(require) {
         }
         
     }
+    
+    class c_bar {
+        
+        constructor(scene) {
+            this.scene = scene;
+        }
+        
+    }
+    
+    function _create_bar(scene) {
+        let rect = scene.add.rectangle(320, 200, 100, 30, 128)
+        scene.matter.add.gameObject(rect, {
+            isStatic: true,
+        });
+        Phaser.Physics.Matter.Matter.Body.rotate(rect.body, 1, {x:270, y:200});
+    };
 
     function create() {
         let bg_map = this.make.tilemap({key: 'bg'});
@@ -142,6 +159,8 @@ define(function(require) {
         this.matter.world.convertTilemapLayer(walls_layer);
         let coll_objs = _create_polygon_from_tiled_object_layer(bg_map, 'coll', this, ...center);
         this.matter.world.setBounds(...center, bg_map.widthInPixels, bg_map.heightInPixels);
+        this.matter.add.mouseSpring();
+        _create_bar(this);
         player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
