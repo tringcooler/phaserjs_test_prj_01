@@ -117,16 +117,20 @@ define(function(require) {
         
     }
     
+    const bar_cfg = {
+        color: 128,
+        dur: 100,
+        size: [95, 10],
+    };
+    
     class c_bar {
         
-        constructor(scene, pos, dir, ang, dur = 100, size = [95, 10], color = 128) {
+        constructor(scene, pos, dir, ang, cfg = bar_cfg) {
             this.scene = scene;
             this.pos = pos;
             this.dir = Math.sign(dir);
             this.ang = ang;
-            this.dur = dur;
-            this.size = size;
-            this.color = color;
+            this.cfg = cfg;
             this._init_status();
             this._create_gameobject();
             this._init_controll();
@@ -148,8 +152,8 @@ define(function(require) {
         }
         
         _create_gameobject() {
-            this.mass = addv(this.pos, [this.dir * this.size[0] / 2, 0]);
-            this.go = this.scene.add.rectangle(...this.mass, ...this.size, this.color);
+            this.mass = addv(this.pos, [this.dir * this.cfg.size[0] / 2, 0]);
+            this.go = this.scene.add.rectangle(...this.mass, ...this.cfg.size, this.cfg.color);
             this.scene.matter.add.gameObject(this.go, {
                 isStatic: true,
                 //restitution: 150,
@@ -177,6 +181,10 @@ define(function(require) {
             });
         }
         
+        _calc_flip_speed() {
+            
+        }
+        
         _init_flip_event() {
             this.scene.matter.world.on('collisionactive', (event, body_a, body_b) => {
                 let src, dst;
@@ -191,7 +199,15 @@ define(function(require) {
                 }
                 if(dst._collflag_ball && this.status.sta > 0) {
                     console.log('.');
-                    dst.gameObject.thrust(2000);
+                    /*dst.gameObject.applyForce({
+                        x: 0,
+                        y: -100,
+                    });*/
+                    let vx = dst.velocity.x,
+                        vy = dst.velocity.y;
+                    console.log(
+                        event.pairs.map(p => ({norm: p.collision.normal, pos: p.activeContacts.map(c => ({x: c.vertex.x, y: c.vertex.y}))})));
+                    dst.gameObject.setVelocity(vx, vy - 15);
                 }
             });
         }
@@ -204,7 +220,7 @@ define(function(require) {
         }
         
         _delt_angle(delt) {
-            return this.ang * 2 / this.dur * delt;
+            return this.ang * 2 / this.cfg.dur * delt;
         }
         
         _update_angle(delt) {
