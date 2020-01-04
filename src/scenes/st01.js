@@ -7,7 +7,10 @@ define(function(require) {
     let opv = op => (a, b) => [op(a[0], b[0]), op(a[1], b[1])],
         addv = opv((a, b) => a + b),
         subv = opv((a, b) => a - b),
-        nf = n => f => ((b, f) => Math.round(f * b) / b)(10 ** n, f);
+        nf = n => f => ((b, f) => Math.round(f * b) / b)(10 ** n, f),
+        nf3 = nf(3);
+    
+    let ball_pool = [];
 
     function preload() {
         this.load.spritesheet('player1', 
@@ -40,6 +43,8 @@ define(function(require) {
             this.go = this.scene.matter.add.sprite(...pos, this.name, null, {
                 ignoreGravity: false,//true,
                 inertia: Infinity,
+                frictionAir: 0.01,
+                restitution: .5,
                 shape: {
                     type: 'circle',
                     radius: 20,
@@ -80,22 +85,47 @@ define(function(require) {
         
         _init_gameobject() {
             this.go.anims.play(this.name + '_down');
-            this.go.setBounce(.5);
         }
         
-        update_anims() {
+        _update_debug() {
             if(!this.debug_txt) this.debug_txt = this.scene.add.text(20, 20, '');
             this.debug_txt.setText(
                 'angle:' + this.go.body.angle +
-                '\nspeed:' + nf(3)(this.go.body.speed) +
-                '\nvx:' + nf(3)(this.go.body.velocity.x) +
-                '\nvy:' + nf(3)(this.go.body.velocity.y));
+                '\nspeed:' + nf3(this.go.body.speed) +
+                '\nvx:' + nf3(this.go.body.velocity.x) +
+                '\nvy:' + nf3(this.go.body.velocity.y));
+        }
+        
+        _check_direct() {
+            let vx = nf3(this.go.body.velocity.x),
+                vy = nf3(this.go.body.velocity.y);
+            if(Math.abs(vy) < Math.abs(vx)) {
+                if(vx < 0) {
+                    return [this.name + '_side', false];
+                } else {
+                    return [this.name + '_side', true];
+                }
+            } else {
+                if(vy < 0) {
+                    return [this.name + '_up', false];
+                } else {
+                    return [this.name + '_down', false];
+                }
+            }
+        }
+        
+        _update_anims() {
+            let [aname, aflip] = this._check_direct();
+            this.go.anims.play(aname, -1);
+            this.go.flipX = aflip;
+        }
+        
+        update() {
+            this._update_anims();
+            this._update_debug();
         }
         
     }
-    
-    //let player;
-    player = null;
 
     function create() {
         let bg_map = this.make.tilemap({key: 'bg'});
@@ -112,14 +142,14 @@ define(function(require) {
         this.matter.world.convertTilemapLayer(walls_layer);
         let coll_objs = _create_polygon_from_tiled_object_layer(bg_map, 'coll', this, ...center);
         this.matter.world.setBounds(...center, bg_map.widthInPixels, bg_map.heightInPixels);
-        //this.matter.world.createDebugGraphic();
-        //this.matter.world.drawDebug = false;
         player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
-        console.log(player);
+        ball_pool.push(player);
     }
     
     function update(time, delta) {
-        player.update_anims()
+        for(let ball of ball_pool) {
+            ball.update();
+        }
     }
     
     return {
