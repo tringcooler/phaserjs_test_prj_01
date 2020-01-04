@@ -53,8 +53,6 @@ define(function(require) {
                 },
             });
             this._init_anims();
-            this._init_status();
-            this._init_gameobject();
         }
         
         _init_anims() {
@@ -76,12 +74,6 @@ define(function(require) {
                 frameRate: 10,
                 repeat: -1
             });
-        }
-        
-        _init_status() {
-        }
-        
-        _init_gameobject() {
         }
         
         _update_debug() {
@@ -126,7 +118,7 @@ define(function(require) {
     
     class c_bar {
         
-        constructor(scene, pos, dir, ang, dur = 300, size = [95, 10], color = 128) {
+        constructor(scene, pos, dir, ang, dur = 150, size = [95, 10], color = 128) {
             this.scene = scene;
             this.pos = pos;
             this.dir = Math.sign(dir);
@@ -136,10 +128,18 @@ define(function(require) {
             this.color = color;
             this._create_gameobject();
             this._init_status();
+            this._init_controll();
+        }
+        
+        _cur_ang() {
+            return this.dir * this.go.rotation;
         }
         
         _rotate(ang) {
-            ang = Math.min(Math.max(ang, -this.ang), this.ang);
+            let c_ang = this._cur_ang()
+            let r_ang = ang + c_ang;
+            r_ang = Math.min(Math.max(r_ang, -this.ang), this.ang);
+            ang = r_ang - c_ang;
             Phaser.Physics.Matter.Matter.Body.rotate(this.go.body, this.dir * ang,
                 {x: this.pos[0], y: this.pos[1]});
             return ang;
@@ -161,9 +161,17 @@ define(function(require) {
         
         _init_status() {
             this.status = {
-                ang: this.ang,
-                act: 0,
+                act: -1,
             }
+        }
+        
+        _init_controll() {
+            this.scene.input.on('pointerdown', p => {
+                this.status.act = 1;
+            });
+            this.scene.input.on('pointerup', p => {
+                this.status.act = -1;
+            });
         }
         
         _delt_angle(delt) {
@@ -171,7 +179,7 @@ define(function(require) {
         }
         
         _update_angle(delt) {
-            this.status.ang = this._rotate(this.status.ang + this.status.act * this._delt_angle(delt));
+            this._rotate(- this.status.act * this._delt_angle(delt));
         }
         
         update(delt) {
