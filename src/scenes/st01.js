@@ -121,6 +121,7 @@ define(function(require) {
         color: 128,
         dur: 100,
         size: [95, 10],
+        acc: 5,
     };
     
     class c_bar {
@@ -187,27 +188,24 @@ define(function(require) {
         
         _init_flip_event() {
             this.scene.matter.world.on('collisionactive', (event, body_a, body_b) => {
-                let src, dst;
+                let src, dst, ncr;
                 if(body_a === this.go.body) {
                     src = body_a;
                     dst = body_b;
+                    ncr = -1;
                 } else if(body_b === this.go.body) {
                     src = body_b;
                     dst = body_a;
+                    ncr = 1;
                 } else {
                     return;
                 }
                 if(dst._collflag_ball && this.status.sta > 0) {
-                    console.log('.');
-                    /*dst.gameObject.applyForce({
-                        x: 0,
-                        y: -100,
-                    });*/
                     let vx = dst.velocity.x,
                         vy = dst.velocity.y;
-                    console.log(
-                        event.pairs.map(p => ({norm: p.collision.normal, pos: p.activeContacts.map(c => ({x: c.vertex.x, y: c.vertex.y}))})));
-                    dst.gameObject.setVelocity(vx, vy - 15);
+                    let ncx = ncr * event.pairs[0].collision.normal.x,
+                        ncy = ncr * event.pairs[0].collision.normal.y;
+                    dst.gameObject.setVelocity(vx + ncx * this.cfg.acc , vy + ncy * this.cfg.acc);
                 }
             });
         }
