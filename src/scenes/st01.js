@@ -80,9 +80,12 @@ define(function(require) {
         
         update_anims() {
             if(!this.debug_txt) this.debug_txt = this.scene.add.text(20, 20, '');
+            let nf = n => f => ((b, f) => Math.round(f * b) / b)(10 ** n, f);
             this.debug_txt.setText(
                 'angle:' + this.go.body.angle +
-                '\nspeed:' + this.go.body.speed.toString().slice(0, 5));
+                '\nspeed:' + nf(5)(this.go.body.speed) +
+                '\nvx:' + nf(3)(this.go.body.velocity.x) +
+                '\nvy:' + nf(3)(this.go.body.velocity.y));
         }
         
     }
