@@ -1,7 +1,7 @@
 define(function(require) {
 
     function preload() {
-        this.load.image('logo', '../assets/img/tst01.png');
+        this.load.image('logo', 'assets/img/tst01.png');
     }
 
     function create() {
