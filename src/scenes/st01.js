@@ -40,13 +40,12 @@ define(function(require) {
         constructor(scene, name, pos) {
             this.scene = scene;
             this.name = name;
-            this._bounce = 0.5;
             this.go = this.scene.matter.add.sprite(...pos, this.name, null, {
                 ignoreGravity: false,
                 inertia: Infinity,
                 friction: 0.00001,
                 frictionAir: 0.01,
-                restitution: this._bounce,
+                restitution: .5,
                 shape: {
                     type: 'circle',
                     radius: 20,
@@ -55,7 +54,6 @@ define(function(require) {
             this._init_anims();
             this._init_status();
             this._init_gameobject();
-            this._init_bounce_event();
         }
         
         _init_anims() {
@@ -88,26 +86,6 @@ define(function(require) {
         
         _init_gameobject() {
             this.go.anims.play(this.name + '_down');
-        }
-        
-        _init_bounce_event() {
-            this.scene.matter.world.on('collisionstart', (event, body_a, body_b) => {
-                let src, dst;
-                if(body_a === this.go.body) {
-                    src = body_a;
-                    dst = body_b;
-                } else if(body_b === this.go.body) {
-                    src = body_b;
-                    dst = body_a;
-                } else {
-                    return;
-                }
-                if('_coll_bounce' in dst) {
-                    this.go.setBounce(dst._coll_bounce);
-                } else {
-                    this.go.setBounce(this._bounce);
-                }
-            });
         }
         
         _update_debug() {
@@ -172,9 +150,13 @@ define(function(require) {
             this.go = this.scene.add.rectangle(...this.mass, ...this.size, this.color);
             this.scene.matter.add.gameObject(this.go, {
                 isStatic: true,
+                //restitution: 150,
             });
             this._rotate(this.ang);
-            this.go.body._coll_bounce = 0;
+            /* static object's restitution is always 0, need to set after create.
+               but, the real pair restitution between 2 objects is the Max of them,
+               so, this is not worked when set to 0. */
+            //this.go.setBounce(0);
         }
         
     }
@@ -197,7 +179,7 @@ define(function(require) {
         this.matter.add.mouseSpring();
         let bar1 = new c_bar(this, addv(center, [70, 403]), 1, 0.5);
         let bar2 = new c_bar(this, addv(center, [289, 403]), -1, 0.5);
-        player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
+        let player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
     
