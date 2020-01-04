@@ -35,7 +35,8 @@ define(function(require) {
             this.cameras.main.centerY - bg_map.heightInPixels / 2];
         let bg_layer = bg_map.createStaticLayer('background', 'mp01', ...center);
         let walls_layer = bg_map.createStaticLayer('walls', 'mp01', ...center);
-        walls_layer.setCollisionByExclusion([-1]);
+        walls_layer.setCollisionByExclusion([1]);
+        this.matter.world.convertTilemapLayer(walls_layer);
         let coll_objs = _create_polygon_from_tiled_object_layer(bg_map, 'coll', this, ...center);
     }
     
