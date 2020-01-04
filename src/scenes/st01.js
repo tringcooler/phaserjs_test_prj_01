@@ -3,6 +3,11 @@ define(function(require) {
     const 
         ASSETS = n => '../assets/' + n;
         IMGS = (n, ex) => ASSETS('img/' + n + (ex ? ex : '.png'));
+    
+    let opv = op => (a, b) => [op(a[0], b[0]), op(a[1], b[1])],
+        addv = opv((a, b) => a + b),
+        subv = opv((a, b) => a - b),
+        nf = n => f => ((b, f) => Math.round(f * b) / b)(10 ** n, f);
 
     function preload() {
         this.load.spritesheet('player1', 
@@ -80,25 +85,14 @@ define(function(require) {
         
         update_anims() {
             if(!this.debug_txt) this.debug_txt = this.scene.add.text(20, 20, '');
-            let nf = n => f => ((b, f) => Math.round(f * b) / b)(10 ** n, f);
             this.debug_txt.setText(
                 'angle:' + this.go.body.angle +
-                '\nspeed:' + nf(5)(this.go.body.speed) +
+                '\nspeed:' + nf(3)(this.go.body.speed) +
                 '\nvx:' + nf(3)(this.go.body.velocity.x) +
                 '\nvy:' + nf(3)(this.go.body.velocity.y));
         }
         
     }
-    
-    function _init_player(scene, pos) {
-        
-        player.anims.play('pside');
-        return player;
-    }
-    
-    let opv = op => (a, b) => [op(a[0], b[0]), op(a[1], b[1])],
-        addv = opv((a, b) => a + b),
-        subv = opv((a, b) => a - b);
     
     //let player;
     player = null;
