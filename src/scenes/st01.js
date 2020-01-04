@@ -118,10 +118,10 @@ define(function(require) {
     }
     
     const bar_cfg = {
-        color: 128,
+        color: 0x80,
         dur: 100,
-        size: [95, 10],
-        acc: 5,
+        size: [98, 10],
+        acc: 7,
     };
     
     class c_bar {
@@ -231,6 +231,35 @@ define(function(require) {
         }
         
     }
+    
+    const pillar_cfg = {
+        color: 0x8000,
+        size: 20,
+        bounce: 1.5,
+    };
+    
+    class c_pillar {
+        
+        constructor(scene, pos, cfg = pillar_cfg) {
+            this.scene = scene;
+            this.pos = pos;
+            this.cfg = cfg;
+            this._create_gameobject();
+        }
+        
+        _create_gameobject() {
+            this.go = this.scene.add.circle(...this.pos, this.cfg.size, this.cfg.color);
+            this.scene.matter.add.gameObject(this.go, {
+                isStatic: true,
+                shape: {
+                    type: 'circle',
+                    radius: this.cfg.size,
+                }
+            });
+            this.go.setBounce(1.5);
+        }
+        
+    }
 
     function create() {
         let bg_map = this.make.tilemap({key: 'bg'});
@@ -252,7 +281,12 @@ define(function(require) {
         let bar2 = new c_bar(this, addv(center, [289, 403]), -1, 0.5);
         bar_pool.push(bar1);
         bar_pool.push(bar2);
-        player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
+        pils = [
+            [320, 100],
+            [260, 200],
+            [370, 200],
+        ].map(pos => new c_pillar(this, pos));
+        let player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
     
