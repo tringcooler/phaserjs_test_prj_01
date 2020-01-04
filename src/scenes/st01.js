@@ -40,12 +40,13 @@ define(function(require) {
         constructor(scene, name, pos) {
             this.scene = scene;
             this.name = name;
+            this._bounce = 0.5;
             this.go = this.scene.matter.add.sprite(...pos, this.name, null, {
                 ignoreGravity: false,
                 inertia: Infinity,
                 friction: 0.00001,
                 frictionAir: 0.01,
-                restitution: .5,
+                restitution: this._bounce,
                 shape: {
                     type: 'circle',
                     radius: 20,
@@ -54,6 +55,7 @@ define(function(require) {
             this._init_anims();
             this._init_status();
             this._init_gameobject();
+            this._init_bounce_event();
         }
         
         _init_anims() {
@@ -86,6 +88,26 @@ define(function(require) {
         
         _init_gameobject() {
             this.go.anims.play(this.name + '_down');
+        }
+        
+        _init_bounce_event() {
+            this.scene.matter.world.on('collisionstart', (event, body_a, body_b) => {
+                let src, dst;
+                if(body_a === this.go.body) {
+                    src = body_a;
+                    dst = body_b;
+                } else if(body_b === this.go.body) {
+                    src = body_b;
+                    dst = body_a;
+                } else {
+                    return;
+                }
+                if('_coll_bounce' in dst) {
+                    this.go.setBounce(dst._coll_bounce);
+                } else {
+                    this.go.setBounce(this._bounce);
+                }
+            });
         }
         
         _update_debug() {
@@ -130,7 +152,7 @@ define(function(require) {
     
     class c_bar {
         
-        constructor(scene, pos, dir, ang, size = [100, 10], color = 128) {
+        constructor(scene, pos, dir, ang, size = [95, 10], color = 128) {
             this.scene = scene;
             this.pos = pos;
             this.dir = Math.sign(dir);
@@ -152,17 +174,10 @@ define(function(require) {
                 isStatic: true,
             });
             this._rotate(this.ang);
+            this.go.body._coll_bounce = 0;
         }
         
     }
-    
-    function _create_bar(scene) {
-        let rect = scene.add.rectangle(320, 200, 100, 30, 128)
-        scene.matter.add.gameObject(rect, {
-            isStatic: true,
-        });
-        Phaser.Physics.Matter.Matter.Body.rotate(rect.body, 1, {x:270, y:200});
-    };
 
     function create() {
         let bg_map = this.make.tilemap({key: 'bg'});
@@ -182,7 +197,7 @@ define(function(require) {
         this.matter.add.mouseSpring();
         let bar1 = new c_bar(this, addv(center, [70, 403]), 1, 0.5);
         let bar2 = new c_bar(this, addv(center, [289, 403]), -1, 0.5);
-        let player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
+        player = new c_ball(this, 'player1', addv(c_center, [-100, 0]));
         ball_pool.push(player);
     }
     
