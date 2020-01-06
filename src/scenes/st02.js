@@ -43,13 +43,12 @@ define(function(require) {
         });
         let trigg_time = 0;
         spc_met.on('looped', snd => {
-            trigg_time = this.time.now / 1000 - snd.getCurrentTime() - ldly;
+            trigg_time = this.time.now / 1000 - snd.getCurrentTime();
             console.log('.', snd.getCurrentTime());
         });
         this.input.on('pointerdown', p => {
             let c_time = this.time.now / 1000;
             let delt_time = c_time - trigg_time;
-            delt_time = ldly - delt_time;
             let t = false;
             if(Math.abs(delt_time) < thr) {
                 tac_r.play({delay: 0});
