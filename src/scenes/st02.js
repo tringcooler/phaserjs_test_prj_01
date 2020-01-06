@@ -6,7 +6,7 @@ define(function(require) {
     }
 
     function create() {
-        let bpm = 60,
+        let bpm = 120,
             ldly = 60 / bpm;
         /*
         looped event triggered at audio's end, not start.
@@ -14,7 +14,7 @@ define(function(require) {
         looped event will trigger after start by audio length.
         here, it's 0.1 sec.
         */
-        let idly = 0.1;
+        //let spc_len = 0.1;
         let metro_marker = {
             name: 'metro',
             start: 0,
@@ -25,30 +25,33 @@ define(function(require) {
         };
         let tac = this.sound.add('tac');
         let tac_r = this.sound.add('tac');
-        spc_met = this.sound.add('tac');
+        let spc_met = this.sound.add('tac');
         let b120 = this.sound.add('bpm120');
         tac.addMarker(metro_marker);
+        let m_offset = 1;
+        m_offset = Math.max(m_offset, ldly / 2); //avoid spc_met delay time be negtive
         tac.play('metro', {
-            delay: 1,
+            delay: m_offset,
         });
         /*b120.play({
             delay: 1,
         });*/
         
-        let thr = 0.1;
+        let thr = 0.05;
         spc_met.addMarker(metro_marker);
         spc_met.play('metro', {
-            delay: 1 - ldly / 2 - .001,// - thr / 2,
+            delay: m_offset - ldly / 2,
             mute: true,
         });
         let trigg_time = 0;
         spc_met.on('looped', snd => {
             trigg_time = this.time.now / 1000 - snd.getCurrentTime();
-            console.log('.', snd.getCurrentTime());
+            //console.log('.', snd.getCurrentTime());
         });
+        let delt_cent =  (v, l) => (v % l + l * 3 / 2) % l - l / 2;
         this.input.on('pointerdown', p => {
             let c_time = this.time.now / 1000;
-            let delt_time = c_time - trigg_time;
+            let delt_time = delt_cent((c_time - trigg_time), ldly);
             let t = false;
             if(Math.abs(delt_time) < thr) {
                 tac_r.play({delay: 0});
