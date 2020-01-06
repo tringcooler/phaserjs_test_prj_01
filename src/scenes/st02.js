@@ -6,10 +6,12 @@ define(function(require) {
     }
 
     function create() {
+        let bpm = 60,
+            ldly = 60 / bpm;
         let metro_marker = {
             name: 'metro',
             start: 0,
-            duration: .499, // 1ms for sound, 499ms for wait.
+            duration: ldly / 2 - .001, // 1ms for sound, 499ms for wait.
             config: {
                 loop: true
             }
@@ -26,10 +28,11 @@ define(function(require) {
             delay: 1,
         });*/
         
-        const thr = 0.2;
+        let thr = 0.1,
+            idly = - 0.1;
         spc_met.addMarker(metro_marker);
         spc_met.play('metro', {
-            delay: .749 - thr / 2,
+            delay: 1 - ldly / 2 - .001 - thr / 2 + idly,
             mute: true,
         });
         let trigg_time = 0;
@@ -39,7 +42,6 @@ define(function(require) {
         this.input.on('pointerdown', p => {
             let c_time = this.time.now / 1000;
             let delt_time = c_time - trigg_time;
-            //delt_time = Math.min(delt_time, 0.5 - delt_time);
             let t = false;
             if(delt_time < thr) {
                 tac_r.play({delay: 0});
