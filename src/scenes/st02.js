@@ -18,7 +18,7 @@ define(function(require) {
         let metro_marker = {
             name: 'metro',
             start: 0,
-            duration: ldly / 2 - .001, // 1ms for sound, 499ms for wait.
+            duration: ldly - .001, // 1ms for sound, 499ms for wait.
             config: {
                 loop: true
             }
@@ -38,22 +38,24 @@ define(function(require) {
         let thr = 0.1;
         spc_met.addMarker(metro_marker);
         spc_met.play('metro', {
-            delay: 1 - ldly / 2 - .001 - thr / 2,// - idly,
+            delay: 1 - ldly / 2 - .001,// - thr / 2,
             mute: true,
         });
         let trigg_time = 0;
         spc_met.on('looped', snd => {
-            trigg_time = this.time.now / 1000 - snd.getCurrentTime();
+            trigg_time = this.time.now / 1000 - snd.getCurrentTime() - ldly;
+            console.log('.', snd.getCurrentTime());
         });
         this.input.on('pointerdown', p => {
             let c_time = this.time.now / 1000;
             let delt_time = c_time - trigg_time;
+            delt_time = ldly - delt_time;
             let t = false;
-            if(delt_time < thr) {
+            if(Math.abs(delt_time) < thr) {
                 tac_r.play({delay: 0});
                 t = true;
             }
-            console.log(t ? 'o' : 'x', (delt_time - thr / 2).toFixed(2), c_time.toFixed(2), trigg_time.toFixed(2));
+            console.log(t ? 'o' : 'x', (delt_time).toFixed(4), c_time.toFixed(4), trigg_time.toFixed(4));
         });
     }
     
