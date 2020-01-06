@@ -38,13 +38,12 @@ define(function(require) {
         let thr = 0.1;
         spc_met.addMarker(metro_marker);
         spc_met.play('metro', {
-            delay: 1 - ldly / 2 - .001 - thr / 2 - idly,
+            delay: 1 - ldly / 2 - .001 - thr / 2,// - idly,
             mute: true,
         });
         let trigg_time = 0;
         spc_met.on('looped', snd => {
-            trigg_time = this.time.now / 1000;
-            console.log('.', snd.getCurrentTime());
+            trigg_time = this.time.now / 1000 - snd.getCurrentTime();
         });
         this.input.on('pointerdown', p => {
             let c_time = this.time.now / 1000;
