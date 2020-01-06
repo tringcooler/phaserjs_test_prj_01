@@ -13,6 +13,7 @@ define(function(require) {
         },
         scene: [
             require('scenes/title'),
+            require('scenes/menu'),
             require('scenes/st01'),
         ],
     };
