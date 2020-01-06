@@ -15,13 +15,37 @@ define(function(require) {
             }
         };
         let tac = this.sound.add('tac');
+        let tac_r = this.sound.add('tac');
+        let spc_met = this.sound.add('tac');
         let b120 = this.sound.add('bpm120');
         tac.addMarker(metro_marker);
         tac.play('metro', {
             delay: 1,
         });
-        b120.play({
+        /*b120.play({
             delay: 1,
+        });*/
+        
+        const thr = 0.1;
+        spc_met.addMarker(metro_marker);
+        spc_met.play('metro', {
+            delay: .749,// - thr / 2,
+            mute: true,
+        });
+        let trigg_time = 0;
+        spc_met.on('looped', snd => {
+            trigg_time = this.time.now / 1000;
+        });
+        this.input.on('pointerdown', p => {
+            let c_time = this.time.now / 1000;
+            let delt_time = (c_time - trigg_time);
+            delt_time = Math.min(delt_time, 0.5 - delt_time);
+            let t = false;
+            if(delt_time < thr) {
+                tac_r.play();
+                t = true;
+            }
+            console.log(t ? 'o' : 'x', delt_time.toFixed(2), c_time.toFixed(2), trigg_time.toFixed(2));
         });
     }
     
