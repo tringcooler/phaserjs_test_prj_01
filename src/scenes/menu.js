@@ -7,7 +7,7 @@ define(function(require) {
 
     function create() {
         const 
-            st_num = 2,
+            st_num = 3,
             butt_ht = 50,
             butt_off = 250;
         for(let st = 1; st <= st_num; st ++) {

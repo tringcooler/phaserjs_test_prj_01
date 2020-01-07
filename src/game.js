@@ -16,6 +16,7 @@ define(function(require) {
             require('scenes/menu'),
             require('scenes/st01'),
             require('scenes/st02'),
+            require('scenes/st03'),
         ],
     };
     
