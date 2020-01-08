@@ -80,17 +80,18 @@ define(function(require) {
         _calc_frame_shape(frames) {
             let _a = v => (v instanceof Array) ? v : [v];
             this.frames = [];
-            this.fshape = [0, 0];
+            this.fshape = [0, 0, 0];
             frames = _a(frames);
             for(let frames_row of frames) {
                 frames_row = _a(frames_row);
                 this.frames.push(frames_row);
                 this.fshape[1] ++;
                 this.fshape[0] = Math.max(this.fshape[0], frames_row.length);
+                this.fshape[2] += frames_row.length;
             }
         }
         
-        _fill_one(px) {
+        _fill_one(px, left = false) {
             for(let iy = 0; iy < this.fshape[1]; iy ++) {
                 let y = (iy - (this.fshape[1] - 1) / 2) * this.cfg.tile_size[1];
                 let frames_row = this.frames[iy];
@@ -99,9 +100,19 @@ define(function(require) {
                     let x = (ix - (this.fshape[0] - 1) / 2) * this.cfg.tile_size[0];
                     let frame = frames_row[ix];
                     if(!frame) break;
-                    this.layer.co.add(this.scene.add.sprite(px + x, y, this.cfg.tiles, frame));
+                    let sp = this.scene.add.sprite(px + x, y, this.cfg.tiles, frame);
+                    if(left) {
+                        this.layer.co.addAt(sp, 0);
+                    } else {
+                        this.layer.co.add(sp);
+                    }
                 }
             }
+        }
+        
+        get_tiles(idx) {
+            return this.layer.co.list.slice(
+                idx * this.fshape[2]).slice(0, this.fshape[2]);
         }
         
         fill() {
