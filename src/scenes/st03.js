@@ -76,6 +76,7 @@ define(function(require) {
             this.fshape = finfo.fshape;
             this._fill_one(0, false, null, finfo.frames);
             this.fill();
+            this._init_rollx();
         }
         
         _calc_finfo(sframes) {
@@ -201,6 +202,21 @@ define(function(require) {
             this.fill();
         }
         
+        _init_rollx() {
+            Object.defineProperty(this, 'rollx', {
+                get: () => this._rollx,
+                set: v => {
+                    if(v === null) {
+                        this._rollx = 0;
+                    } else {
+                        this.roll(v - this._rollx);
+                        this._rollx = v;
+                    }
+                }
+            });
+            this.rollx = null;
+        }
+        
     }
 
     function create() {
@@ -213,6 +229,13 @@ define(function(require) {
             yoyo: false,
             repeat: -1,
             //onRepeat: () => console.log('.'),
+        });
+        this.tweens.add({
+            targets: ground1,
+            rollx: 500,
+            duration: 5000,
+            repeat: -1,
+            onRepeat: (tw, tar) => {tar.rollx = null},
         });
     }
     
