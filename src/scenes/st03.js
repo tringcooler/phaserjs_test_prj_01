@@ -74,7 +74,7 @@ define(function(require) {
             let width = cfg.tile_size[0] * cfg.len
             this.size = [width, cfg.tile_size[1] * frames.length];
             this.layer = new c_layer(this.scene, pos, [width, cfg.lim_h]);
-            this.fill();
+            this._fill();
         }
         
         _calc_frame_shape(frames) {
@@ -91,7 +91,7 @@ define(function(require) {
             }
         }
         
-        _fill_one(px, left = false) {
+        _fill_one(px, left = false, tile = null) {
             for(let iy = 0; iy < this.fshape[1]; iy ++) {
                 let y = (iy - (this.fshape[1] - 1) / 2) * this.cfg.tile_size[1];
                 let frames_row = this.frames[iy];
@@ -100,7 +100,14 @@ define(function(require) {
                     let x = (ix - (this.fshape[0] - 1) / 2) * this.cfg.tile_size[0];
                     let frame = frames_row[ix];
                     if(!frame) break;
-                    let sp = this.scene.add.sprite(px + x, y, this.cfg.tiles, frame);
+                    let sp = tile;
+                    if(sp) {
+                        sp.setPosition(px, y);
+                    } else {
+                        sp = this.scene.add.sprite(px + x, y, this.cfg.tiles, frame);
+                    }
+                    sp._ground_off_x = x;
+                    sp._ground_frames = this.frames;
                     if(left) {
                         this.layer.co.addAt(sp, 0);
                     } else {
@@ -110,12 +117,17 @@ define(function(require) {
             }
         }
         
-        get_tiles(idx) {
+        _get_tiles(idx) {
             return this.layer.co.list.slice(
                 idx * this.fshape[2]).slice(0, this.fshape[2]);
         }
         
-        fill() {
+        _get_x(tile) {
+            if(typeof tile == 'number') tile = this._get_tiles(tile)[0];
+            return tile.x + tile._ground_off_x;
+        }
+        
+        _fill() {
             for(let x = -200; x < 200; x += 24 * this.fshape[0]) {
                 this._fill_one(x);
             }
