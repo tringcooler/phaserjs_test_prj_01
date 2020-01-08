@@ -69,43 +69,60 @@ define(function(require) {
         constructor(scene, frames, pos, cfg = ground_cfg) {
             this.scene = scene
             this.cfg = cfg;
-            this.frames = frames;
-            this.prev_frame = null;
+            this._calc_frame_shape(frames);
+            this.prev_frames = null;
             let width = cfg.tile_size[0] * cfg.len
             this.size = [width, cfg.tile_size[1] * frames.length];
             this.layer = new c_layer(this.scene, pos, [width, cfg.lim_h]);
             this.fill();
         }
         
-        _calc_frame_shape() {
+        _calc_frame_shape(frames) {
+            let _a = v => (v instanceof Array) ? v : [v];
+            this.frames = [];
+            this.fshape = [0, 0];
+            frames = _a(frames);
+            for(let frames_row of frames) {
+                frames_row = _a(frames_row);
+                this.frames.push(frames_row);
+                this.fshape[1] ++;
+                this.fshape[0] = Math.max(this.fshape[0], frames_row.length);
+            }
         }
         
         _fill_one(px) {
-            let flen = this.frames.length;
-            for(let i = 0; i < flen; i++) {
-                let py = (i - flen / 2) * this.cfg.tile_size[1];
-                this.layer.co.add(this.scene.add.sprite(px, py, this.cfg.tiles, this.frames[i]));
+            for(let iy = 0; iy < this.fshape[1]; iy ++) {
+                let y = (iy - (this.fshape[1] - 1) / 2) * this.cfg.tile_size[1];
+                let frames_row = this.frames[iy];
+                if(!frames_row) break;
+                for(let ix = 0; ix < this.fshape[0]; ix ++) {
+                    let x = (ix - (this.fshape[0] - 1) / 2) * this.cfg.tile_size[0];
+                    let frame = frames_row[ix];
+                    if(!frame) break;
+                    this.layer.co.add(this.scene.add.sprite(px + x, y, this.cfg.tiles, frame));
+                }
             }
         }
         
         fill() {
-            for(let x = -200; x < 200; x += 24) {
+            /*for(let x = -200; x < 200; x += 24) {
                 this._fill_one(x);
-            }
+            }*/
+            this._fill_one(0);
         }
         
     }
 
     function create() {
-        ground1 = new c_ground(this, [5, 6, 7], [320, 240]);
+        ground1 = new c_ground(this, [9, [9, 10], [8, 9], 9], [320, 240]);
         this.add.circle(320, 240, 5, 0xff0000);
-        this.tweens.add({
+        /*this.tweens.add({
             targets: ground1.layer,
             angle: 360,
             duration: 6000,
             yoyo: false,
             repeat: -1
-        });
+        });*/
     }
     
     function update() {
