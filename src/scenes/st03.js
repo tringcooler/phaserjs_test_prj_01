@@ -74,6 +74,7 @@ define(function(require) {
             this.layer = new c_layer(this.scene, pos, [width, cfg.lim_h]);
             let finfo = this._calc_finfo(frames);
             this.fshape = finfo.fshape;
+            this.next_frames = [null, null];
             this._fill_one(0, false, null, finfo.frames);
             this.fill();
             this._init_rollx();
@@ -115,6 +116,14 @@ define(function(require) {
             return tile._ground_frames;
         }
         
+        _debug_refcnt(name, delt) {
+            if(!this._dbg_rc_text) this._dbg_rc_text = this.scene.add.text(20, 20, '');
+            if(!this._dbg_rc_pool) this._dbg_rc_pool = {};
+            if(!this._dbg_rc_pool[name]) this._dbg_rc_pool[name] = 0;
+            this._dbg_rc_pool[name] += delt;
+            this._dbg_rc_text.setText(Object.entries(this._dbg_rc_pool).map(v=>v.join(': ')).join('\n'));
+        }
+        
         _fill_one(px, left = false, tiles = null, frames = null) {
             if(!frames) {
                 frames = this._get_frames(left ? 0 : -1);
@@ -134,6 +143,8 @@ define(function(require) {
                         sp.setPosition(px + x, y);
                     } else {
                         sp = this.scene.add.sprite(px + x, y, this.cfg.tiles, frame);
+                        sp.once('destroy', go => this._debug_refcnt('sp', -1));
+                        this._debug_refcnt('sp', 1);
                     }
                     sp._ground_off_x = x;
                     sp._ground_frames = frames;
@@ -159,7 +170,7 @@ define(function(require) {
             return [[top_l, top_r], [sta_l, sta_r], [x_l, x_r]];
         }
         
-        fill(frames = null) {
+        fill() {
             let [top_tiles, top_status, top_x] = this._filled_status();
             let left;
             if(top_status[0] < 0) {
@@ -175,8 +186,11 @@ define(function(require) {
                 hd_idx = 0;
                 tl_idx = 1;
             }
+            let frames = this.next_frames[hd_idx];
             if(!frames) {
                 frames = this._get_frames(top_tiles[hd_idx]);
+            } else {
+                this.next_frames[hd_idx] = null;
             }
             let tiles = null;
             if(top_status[tl_idx] > 0) {
@@ -192,7 +206,11 @@ define(function(require) {
             let step_x = 24 * this.fshape[0];
             if(left) step_x = - step_x;
             this._fill_one(top_x[hd_idx] + step_x, left, tiles, frames);
-            this.fill(frames);
+            this.fill();
+        }
+        
+        prep_frames(frames, left = false) {
+            this.next_frames[left ? 0 : 1] = this._calc_finfo(frames).frames;
         }
         
         roll(sx) {
@@ -220,7 +238,13 @@ define(function(require) {
     }
 
     function create() {
-        ground1 = new c_ground(this, [[16, 18], [96, 98]], [320, 240]);
+        let frames_list = [
+            [[16, 18], [96, 98]],
+            [[136, 138], [216, 218]],
+        ];
+        let _fidx = 0;
+        let fidx = () => (_fidx ++) % 2;
+        ground1 = new c_ground(this, frames_list[fidx()], [320, 240]);
         this.add.circle(320, 240, 5, 0xff0000);
         this.tweens.add({
             targets: ground1.layer,
@@ -232,10 +256,10 @@ define(function(require) {
         });
         this.tweens.add({
             targets: ground1,
-            rollx: 500,
+            rollx: -500,
             duration: 5000,
             repeat: -1,
-            onRepeat: (tw, tar) => {tar.rollx = null},
+            onRepeat: (tw, tar) => {tar.rollx = null; tar.prep_frames(frames_list[fidx()])},
         });
     }
     
