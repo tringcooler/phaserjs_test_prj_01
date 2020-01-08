@@ -75,8 +75,7 @@ define(function(require) {
             let finfo = this._calc_finfo(frames);
             this.fshape = finfo.fshape;
             this._fill_one(0, false, null, finfo.frames);
-            this._fill(false);
-            this._fill(true);
+            this.fill();
         }
         
         _calc_finfo(sframes) {
@@ -130,18 +129,19 @@ define(function(require) {
                     if(!frame) break;
                     let sp;
                     if(tiles) {
-                        sp = tiles[tiles_idx ++];
-                        sp.setPosition(px, y);
+                        sp = tiles[tiles_idx];
+                        sp.setPosition(px + x, y);
                     } else {
                         sp = this.scene.add.sprite(px + x, y, this.cfg.tiles, frame);
                     }
                     sp._ground_off_x = x;
                     sp._ground_frames = frames;
                     if(left) {
-                        this.layer.co.addAt(sp, 0);
+                        this.layer.co.addAt(sp, tiles_idx);
                     } else {
                         this.layer.co.add(sp);
                     }
+                    tiles_idx ++;
                 }
             }
         }
@@ -158,27 +158,47 @@ define(function(require) {
             return [[top_l, top_r], [sta_l, sta_r], [x_l, x_r]];
         }
         
-        _fill(left = false, frames = null) {
+        fill(frames = null) {
+            let [top_tiles, top_status, top_x] = this._filled_status();
+            let left;
+            if(top_status[0] < 0) {
+                left = true;
+            } else if(top_status[1] < 0) {
+                left = false;
+            } else {
+                return;
+            }
             let hd_idx = 1,
                 tl_idx = 0;
             if(left) {
                 hd_idx = 0;
                 tl_idx = 1;
             }
-            let [top_tiles, top_status, top_x] = this._filled_status();
-            if(top_status[hd_idx] >= 0) return;
             if(!frames) {
                 frames = this._get_frames(top_tiles[hd_idx]);
             }
             let tiles = null;
-            if(top_status[tl_idx] > 0
-                && frames === this._get_frames(top_tiles[tl_idx])) {
-                tiles = top_tiles[tl_idx];
+            if(top_status[tl_idx] > 0) {
+                let destroy = true;
+                if(frames === this._get_frames(top_tiles[tl_idx])) {
+                    tiles = top_tiles[tl_idx];
+                    destroy = false;
+                }
+                top_tiles[tl_idx].forEach(t => {
+                    this.layer.co.remove(t, destroy);
+                });
             }
             let step_x = 24 * this.fshape[0];
             if(left) step_x = - step_x;
             this._fill_one(top_x[hd_idx] + step_x, left, tiles, frames);
-            this._fill(left, frames);
+            this.fill(frames);
+        }
+        
+        roll(sx) {
+            this.layer.co.iterate(sp => {
+                sp.x += sx;
+            });
+            this.fill();
         }
         
     }
