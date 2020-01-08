@@ -13,14 +13,6 @@ define(function(require) {
             frameWidth: 24, frameHeight: 24,
         });
     }
-    
-    const
-        ground_cfg = {
-            tiles: 'bg_tiles',
-            tile_size: [24, 24],
-            len: 10,
-            lim_h: 480,
-        };
         
     function meta_bound(props) {
         
@@ -64,29 +56,49 @@ define(function(require) {
         }
     }
     
+    const
+        ground_cfg = {
+            tiles: 'bg_tiles',
+            tile_size: [24, 24],
+            len: 10,
+            lim_h: 480,
+        };
+    
     class c_ground {
         
-        constructor(scene, frame, pos, cfg = ground_cfg) {
+        constructor(scene, frames, pos, cfg = ground_cfg) {
             this.scene = scene
             this.cfg = cfg;
-            this.frame = frame;
+            this.frames = frames;
             this.prev_frame = null;
             let width = cfg.tile_size[0] * cfg.len
-            this.size = [width, cfg.tile_size[1]];
+            this.size = [width, cfg.tile_size[1] * frames.length];
             this.layer = new c_layer(this.scene, pos, [width, cfg.lim_h]);
             this.fill();
         }
         
+        _calc_frame_shape() {
+        }
+        
+        _fill_one(px) {
+            let flen = this.frames.length;
+            for(let i = 0; i < flen; i++) {
+                let py = (i - flen / 2) * this.cfg.tile_size[1];
+                this.layer.co.add(this.scene.add.sprite(px, py, this.cfg.tiles, this.frames[i]));
+            }
+        }
+        
         fill() {
             for(let x = -200; x < 200; x += 24) {
-                this.layer.co.add(this.scene.add.sprite(x, 0, this.cfg.tiles, 5));
+                this._fill_one(x);
             }
         }
         
     }
 
     function create() {
-        ground1 = new c_ground(this, 5, [320, 240]);
+        ground1 = new c_ground(this, [5, 6, 7], [320, 240]);
+        this.add.circle(320, 240, 5, 0xff0000);
         this.tweens.add({
             targets: ground1.layer,
             angle: 360,
