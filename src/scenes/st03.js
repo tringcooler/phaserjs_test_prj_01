@@ -48,6 +48,21 @@ define(function(require) {
         return c_bound;
     }
     
+    class c_bound extends meta_bound(
+        ['x', 'y', 'angle', 'scaleX', 'scaleY', 'flipX', 'flipY', 'rotation']
+    ){
+        constructor(co, size) {
+            let mo = co.scene.make.graphics({fillStyle: {color: 0 }, add: false})
+                .fillRect(-size[0] / 2, -size[1] / 2, ...size);
+            let msk = mo.createGeometryMask();
+            co.setMask(msk);
+            super([co, mo]);
+            this.co = co;
+            this.mo = mo;
+            this.scene = co.scene;
+        }
+    }
+    
     class c_ground {
         
         constructor(scene, frame, pos, cfg = ground_cfg) {
@@ -57,29 +72,15 @@ define(function(require) {
             this.prev_frame = null;
             let width = cfg.tile_size[0] * cfg.len
             this.size = [width, cfg.tile_size[1]];
-            this._make_bound(pos, [width, cfg.lim_h]);
+            this.bo = new c_bound(
+                this.scene.add.container(...pos),
+                [width, cfg.lim_h]);
             this.fill();
-        }
-        
-        _make_mask(pos, size) {
-            let msk_shape = this.scene.make.graphics({fillStyle: {color: 0 }, add: false})
-                .fillRect(-size[0] / 2, -size[1] / 2, ...size);
-            let msk = msk_shape.createGeometryMask();
-            return [msk_shape, msk];
-        }
-        
-        _make_bound(pos, size) {
-            this.co = this.scene.add.container(...pos);
-            let [msk_shape, msk] = this._make_mask(pos, size);
-            this.co.setMask(msk);
-            this.bo = new (meta_bound(
-                ['x', 'y', 'angle', 'scaleX', 'scaleY', 'flipX', 'flipY', 'rotation']
-            ))([this.co, msk_shape]);
         }
         
         fill() {
             for(let x = -200; x < 200; x += 24) {
-                this.co.add(this.scene.add.sprite(x, 0, this.cfg.tiles, 5));
+                this.bo.co.add(this.scene.add.sprite(x, 0, this.cfg.tiles, 5));
             }
         }
         
