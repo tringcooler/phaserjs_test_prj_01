@@ -48,18 +48,19 @@ define(function(require) {
         return c_bound;
     }
     
-    class c_bound extends meta_bound(
+    class c_layer extends meta_bound(
         ['x', 'y', 'angle', 'scaleX', 'scaleY', 'flipX', 'flipY', 'rotation']
     ){
-        constructor(co, size) {
-            let mo = co.scene.make.graphics({fillStyle: {color: 0 }, add: false})
+        constructor(scene, pos, size) {
+            let co = scene.add.container(...pos);
+            let mo = scene.make.graphics({fillStyle: {color: 0 }, add: false})
                 .fillRect(-size[0] / 2, -size[1] / 2, ...size);
             let msk = mo.createGeometryMask();
             co.setMask(msk);
             super([co, mo]);
+            this.scene = scene;
             this.co = co;
             this.mo = mo;
-            this.scene = co.scene;
         }
     }
     
@@ -72,15 +73,13 @@ define(function(require) {
             this.prev_frame = null;
             let width = cfg.tile_size[0] * cfg.len
             this.size = [width, cfg.tile_size[1]];
-            this.bo = new c_bound(
-                this.scene.add.container(...pos),
-                [width, cfg.lim_h]);
+            this.layer = new c_layer(this.scene, pos, [width, cfg.lim_h]);
             this.fill();
         }
         
         fill() {
             for(let x = -200; x < 200; x += 24) {
-                this.bo.co.add(this.scene.add.sprite(x, 0, this.cfg.tiles, 5));
+                this.layer.co.add(this.scene.add.sprite(x, 0, this.cfg.tiles, 5));
             }
         }
         
@@ -89,7 +88,7 @@ define(function(require) {
     function create() {
         ground1 = new c_ground(this, 5, [320, 240]);
         this.tweens.add({
-            targets: ground1.bo,
+            targets: ground1.layer,
             angle: 360,
             duration: 6000,
             yoyo: false,
