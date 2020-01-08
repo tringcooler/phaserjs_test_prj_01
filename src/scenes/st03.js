@@ -105,24 +105,23 @@ define(function(require) {
         }
         
         fill() {
-            /*for(let x = -200; x < 200; x += 24) {
+            for(let x = -200; x < 200; x += 24 * this.fshape[0]) {
                 this._fill_one(x);
-            }*/
-            this._fill_one(0);
+            }
         }
         
     }
 
     function create() {
-        ground1 = new c_ground(this, [9, [9, 10], [8, 9], 9], [320, 240]);
+        ground1 = new c_ground(this, [[16, 18], [96, 98]], [320, 240]);
         this.add.circle(320, 240, 5, 0xff0000);
-        /*this.tweens.add({
+        this.tweens.add({
             targets: ground1.layer,
             angle: 360,
             duration: 6000,
             yoyo: false,
             repeat: -1
-        });*/
+        });
     }
     
     function update() {
