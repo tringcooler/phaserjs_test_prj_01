@@ -73,8 +73,10 @@ define(function(require) {
             this.size = [width, cfg.tile_size[1] * frames.length];
             this.layer = new c_layer(this.scene, pos, [width, cfg.lim_h]);
             let finfo = this._calc_finfo(frames);
-            this._fill_one(0, false, null, finfo);
-            this._fill();
+            this.fshape = finfo.fshape;
+            this._fill_one(0, false, null, finfo.frames);
+            this._fill(false);
+            this._fill(true);
         }
         
         _calc_finfo(sframes) {
@@ -105,25 +107,25 @@ define(function(require) {
         
         _get_x(tile) {
             tile = this._get_tile(tile);
-            return tile.x + tile._ground_off_x;
+            return tile.x - tile._ground_off_x;
         }
         
-        _get_finfo(tile) {
+        _get_frames(tile) {
             tile = this._get_tile(tile);
-            return tile._ground_finfo;
+            return tile._ground_frames;
         }
         
-        _fill_one(px, left = false, tiles = null, finfo = null) {
-            if(!finfo) {
-                finfo = this._get_finfo(left ? 0 : -1);
+        _fill_one(px, left = false, tiles = null, frames = null) {
+            if(!frames) {
+                frames = this._get_frames(left ? 0 : -1);
             }
             let tiles_idx = 0;
-            for(let iy = 0; iy < finfo.fshape[1]; iy ++) {
-                let y = (iy - (finfo.fshape[1] - 1) / 2) * this.cfg.tile_size[1];
-                let frames_row = finfo.frames[iy];
+            for(let iy = 0; iy < this.fshape[1]; iy ++) {
+                let y = (iy - (this.fshape[1] - 1) / 2) * this.cfg.tile_size[1];
+                let frames_row = frames[iy];
                 if(!frames_row) break;
-                for(let ix = 0; ix < finfo.fshape[0]; ix ++) {
-                    let x = (ix - (finfo.fshape[0] - 1) / 2) * this.cfg.tile_size[0];
+                for(let ix = 0; ix < this.fshape[0]; ix ++) {
+                    let x = (ix - (this.fshape[0] - 1) / 2) * this.cfg.tile_size[0];
                     let frame = frames_row[ix];
                     if(!frame) break;
                     let sp;
@@ -134,7 +136,7 @@ define(function(require) {
                         sp = this.scene.add.sprite(px + x, y, this.cfg.tiles, frame);
                     }
                     sp._ground_off_x = x;
-                    sp._ground_finfo = finfo;
+                    sp._ground_frames = frames;
                     if(left) {
                         this.layer.co.addAt(sp, 0);
                     } else {
@@ -151,12 +153,12 @@ define(function(require) {
             let top_n = (this.cfg.len - 1) / 2,
                 t_w = this.cfg.tile_size[0];
             let [x_l, x_r] = [this._get_x(top_l), this._get_x(top_r)];
-            let sta_l = - _cs(- (top_n + 1) * t_w, - top_n * t_w)(x_l);
-            let sta_r = _cs(top_n * t_w, (top_n + 1) * t_w)(x_r);
+            let sta_l = - _cs(- (top_n + this.fshape[0]) * t_w, - top_n * t_w)(x_l);
+            let sta_r = _cs(top_n * t_w, (top_n + this.fshape[0]) * t_w)(x_r);
             return [[top_l, top_r], [sta_l, sta_r], [x_l, x_r]];
         }
         
-        _fill(left = false, finfo = null) {
+        _fill(left = false, frames = null) {
             let hd_idx = 1,
                 tl_idx = 0;
             if(left) {
@@ -164,18 +166,19 @@ define(function(require) {
                 tl_idx = 1;
             }
             let [top_tiles, top_status, top_x] = this._filled_status();
-            if(top_status[hd_idx] <= 0) return;
-            if(!finfo) {
-                finfo = this._get_finfo(top_tiles[hd_idx]);
+            if(top_status[hd_idx] >= 0) return;
+            if(!frames) {
+                frames = this._get_frames(top_tiles[hd_idx]);
             }
             let tiles = null;
-            if(top_status[tl_idx] < 0
-                && finfo === this._get_finfo(top_tiles[tl_idx])) {
+            if(top_status[tl_idx] > 0
+                && frames === this._get_frames(top_tiles[tl_idx])) {
                 tiles = top_tiles[tl_idx];
             }
-            let step_x = 24 * finfo.fshape[0];
+            let step_x = 24 * this.fshape[0];
             if(left) step_x = - step_x;
-            this._fill_one(top_x[hd_idx] + step_x, left, tiles, finfo);
+            this._fill_one(top_x[hd_idx] + step_x, left, tiles, frames);
+            this._fill(left, frames);
         }
         
     }
